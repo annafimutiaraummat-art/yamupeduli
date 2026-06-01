@@ -27,7 +27,7 @@ export default function RootLayout({
         {/* 2. SCRIPT GOOGLE ANALYTICS (YOUTUBE & GOOGLE ADS) */}
         {/* ========================================================== */}
         <Script 
-          src={`https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX`} 
+          src={`https://www.googletagmanager.com/gtag/js?id=G-WFFDXMSEHQ`} 
           strategy="afterInteractive" 
         />
         <Script id="google-analytics" strategy="afterInteractive">
