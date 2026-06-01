@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, use } from 'react'; // <--- Import 'use'
-import { Calendar, User, ArrowLeft, Tag, Loader2 } from 'lucide-react';
+import { useState, useEffect, use } from 'react';
+import { Calendar, User, ArrowLeft, Tag, Loader2, Share2, Heart } from 'lucide-react';
 import Link from 'next/link';
+import toast from 'react-hot-toast'; // Pastikan lu udah install react-hot-toast
 
 // === INITIALIZE SUPABASE CLIENT ===
 import { createClient } from '@supabase/supabase-js';
@@ -10,9 +11,7 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Ubah tipe params menjadi Promise
 export default function BeritaDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  // Unwrap params menggunakan React.use()
   const unwrappedParams = use(params);
   const articleId = unwrappedParams.id;
 
@@ -25,7 +24,7 @@ export default function BeritaDetailPage({ params }: { params: Promise<{ id: str
       const { data, error } = await supabase
         .from('articles')
         .select('*')
-        .eq('id', articleId) // <--- Panggil articleId yang sudah aman
+        .eq('id', articleId)
         .single();
       
       if (!error && data) {
@@ -34,13 +33,18 @@ export default function BeritaDetailPage({ params }: { params: Promise<{ id: str
       setLoading(false);
     }
     getSingleArticle();
-  }, [articleId]); // <--- Dependency pakai articleId
+  }, [articleId]);
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    toast.success('Link artikel berhasil disalin!');
+  };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-3 text-slate-400 font-sans">
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-4 text-slate-400 font-sans">
         <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
-        <span className="text-xs font-bold uppercase tracking-wider">Memuat Konten Berita...</span>
+        <span className="text-xs font-bold uppercase tracking-wider">Memuat Kabar Kebaikan...</span>
       </div>
     );
   }
@@ -48,9 +52,14 @@ export default function BeritaDetailPage({ params }: { params: Promise<{ id: str
   if (!article) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-4 font-sans text-center px-6">
-        <h2 className="text-xl font-bold text-slate-900">Artikel Tidak Ditemukan</h2>
-        <p className="text-sm text-slate-500">Maaf, berita penyaluran yang Anda cari tidak tersedia.</p>
-        <Link href="/berita" className="px-5 py-2.5 bg-teal-600 text-white font-bold rounded-xl text-xs">Kembali ke Berita</Link>
+        <div className="w-16 h-16 bg-slate-200 text-slate-400 rounded-full flex items-center justify-center mb-2">
+          <Tag className="w-8 h-8" />
+        </div>
+        <h2 className="text-xl font-black text-slate-900">Artikel Tidak Ditemukan</h2>
+        <p className="text-sm text-slate-500 max-w-md leading-relaxed">Maaf, berita penyaluran atau artikel yang Anda cari mungkin telah dipindahkan atau dihapus.</p>
+        <Link href="/berita" className="mt-2 px-6 py-3 bg-teal-600 hover:bg-teal-500 transition-colors text-white font-bold rounded-xl text-sm shadow-md">
+          Kembali ke Indeks Berita
+        </Link>
       </div>
     );
   }
@@ -67,31 +76,61 @@ export default function BeritaDetailPage({ params }: { params: Promise<{ id: str
         .animate-fade-in-up { opacity: 0; animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
       `}} />
 
-      <div className="max-w-3xl mx-auto px-6 pt-12 space-y-6 animate-fade-in-up">
+      <div className="max-w-3xl mx-auto px-6 pt-10 space-y-8 animate-fade-in-up">
         
-        <Link href="/berita" className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-teal-600 transition-colors group">
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Kembali ke Berita
-        </Link>
+        {/* NAVIGASI ATAS & SHARE */}
+        <div className="flex items-center justify-between border-b border-slate-200/60 pb-4">
+          <Link href="/berita" className="inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-teal-600 transition-colors group uppercase tracking-wider">
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Indeks Berita
+          </Link>
+          <button 
+            onClick={handleShare}
+            className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-teal-600 bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm active:scale-95 transition-all"
+          >
+            <Share2 className="w-3.5 h-3.5" /> Bagikan
+          </button>
+        </div>
 
-        <div className="space-y-4">
-          <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-400">
-            <span className="flex items-center gap-1.5 bg-teal-50 text-teal-700 px-2.5 py-1 rounded-md">
+        {/* JUDUL & META DATA */}
+        <div className="space-y-5">
+          <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-500">
+            <span className="flex items-center gap-1.5 bg-teal-50 text-teal-700 px-3 py-1 rounded-md uppercase tracking-wider border border-teal-100">
               <Tag className="w-3.5 h-3.5" /> {article.category}
             </span>
-            <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> {formattedDate}</span>
-            <span className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" /> Tim Admin</span>
+            <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-slate-400" /> {formattedDate}</span>
+            <span className="flex items-center gap-1.5"><User className="w-4 h-4 text-slate-400" /> Humas YAMU Peduli</span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight">
+          <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-[1.15]">
             {article.title}
           </h1>
         </div>
 
-        <div className="w-full h-[300px] md:h-[420px] rounded-[2rem] overflow-hidden shadow-md bg-slate-200">
-          <img src={article.image_url} className="w-full h-full object-cover" alt={article.title} />
+        {/* FOTO SAMPUL */}
+        <div className="w-full h-[250px] sm:h-[350px] md:h-[450px] rounded-3xl overflow-hidden shadow-lg bg-slate-200 border border-slate-200/60 relative group">
+          <img 
+            src={article.image_url} 
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+            alt={article.title} 
+          />
         </div>
 
-        <div className="bg-white rounded-[2rem] p-6 md:p-10 shadow-xl shadow-teal-900/5 border border-slate-200/60 text-slate-600 leading-relaxed text-base md:text-lg whitespace-pre-line font-medium">
+        {/* ISI ARTIKEL */}
+        <article className="bg-white rounded-[2rem] p-6 md:p-10 shadow-xl shadow-teal-900/5 border border-slate-200/60 text-slate-700 leading-loose text-base md:text-lg whitespace-pre-line font-medium">
           {article.snippet}
+        </article>
+
+        {/* CALL TO ACTION (CTA) BAWAH */}
+        <div className="mt-12 bg-teal-950 rounded-[2rem] p-8 md:p-10 text-center text-white shadow-2xl relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10 bg-[url('https://images.unsplash.com/photo-1593113543327-0b1a0e88ba92?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80')] bg-cover bg-center"></div>
+          <div className="relative z-10 space-y-4 max-w-xl mx-auto">
+            <h3 className="text-2xl font-black">Mari Lanjutkan Estafet Kebaikan</h3>
+            <p className="text-sm text-teal-100/80 leading-relaxed pb-2">
+              Kabar baik ini terwujud berkat sedekah Anda. Masih banyak saudara kita yang menanti uluran tangan. Yuk, sisihkan sedikit rezeki hari ini!
+            </p>
+            <Link href="/sedekah" className="inline-flex items-center gap-2 bg-amber-500 text-slate-900 px-8 py-3.5 rounded-full font-black shadow-xl shadow-amber-500/20 hover:bg-amber-400 hover:-translate-y-1 transition-all text-sm">
+              Salurkan Sedekah <Heart className="w-4 h-4 fill-current" />
+            </Link>
+          </div>
         </div>
 
       </div>

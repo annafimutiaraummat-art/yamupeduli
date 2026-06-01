@@ -1,63 +1,18 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import './globals.css'; // Pastikan path globals.css lu bener ya bro
+import './globals.css';
+import { Toaster } from 'react-hot-toast';
+import Script from 'next/script'; // <-- 1. Import komponen Script dari Next.js
+
+import ConditionalNavbar from './components/ConditionalNavbar';
+import Footer from './components/Footer';
+import Preloader from './components/Preloader';
 
 const inter = Inter({ subsets: ['latin'] });
 
-// ==========================================================
-// KONFIGURASI METADATA SEO GOOGLE & SOSIAL MEDIA (OPEN GRAPH)
-// ==========================================================
 export const metadata: Metadata = {
-  // 1. Judul Utama di Google (Maksimal 60 karakter agar tidak terpotong)
-  title: 'YAMU Peduli | Yayasan An-Nafi Mutiara Ummat Resmi',
-  
-  // 2. Deskripsi Web (Maksimal 160 karakter, dibaca robot Google)
-  description: 'Situs resmi Yayasan An-Nafi Mutiara Ummat (YAMU Peduli) Tangerang Selatan. Salurkan sedekah dan donasi Anda secara transparan dan amanah.',
-  
-  // 3. Kata Kunci / Keywords relevan
-  keywords: [
-    'YAMU Peduli', 
-    'Yayasan An-Nafi Mutiara Ummat', 
-    'Donasi Tangerang Selatan', 
-    'Sedekah Anak Yatim Tangsel', 
-    'Infaq Online Resmi', 
-    'Yayasan YAMU',
-    'Amal Jariyah Air Bersih',
-    'yamupeduli'
-  ],
-
-  // 4. Pengaturan robot crawling Google
-  robots: {
-    index: true,
-    follow: true,
-    nocache: true,
-  },
-
-  // 5. Open Graph / Facebook Meta Tags (Biar pas di-share ke WA muncul preview cakep)
-  openGraph: {
-    title: 'YAMU Peduli - Mengalirkan Kebaikan, Wujudkan Harapan',
-    description: 'Bantu anak-anak yatim dan dhuafa meraih cita-cita melalui program pendidikan, sosial kemanusiaan, dan beasiswa berkelanjutan.',
-    url: 'https://yamupeduli.org', // ⚠️ GANTI dengan domain asli lu nanti bro
-    siteName: 'YAMU Peduli',
-    locale: 'id_ID',
-    type: 'website',
-    images: [
-      {
-        url: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=630&q=80', // Foto default saat di-share
-        width: 1200,
-        height: 630,
-        alt: 'YAMU Peduli Kebaikan Umat',
-      },
-    ],
-  },
-
-  // 6. Twitter Card (Opsional tapi bagus buat SEO)
-  twitter: {
-    card: 'summary_large_image',
-    title: 'YAMU Peduli | Yayasan An-Nafi Mutiara Ummat',
-    description: 'Salurkan sedekah dan donasi terbaik Anda bersama YAMU Peduli.',
-    images: ['https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=630&q=80'],
-  },
+  title: 'YAMU Peduli | Yayasan An-Nafi Mutiara Ummat',
+  description: 'Lembaga filantropi resmi yang berdedikasi membangun kemandirian umat melalui program air bersih, pendidikan yatim, dan sosial keagamaan.',
 };
 
 export default function RootLayout({
@@ -68,11 +23,55 @@ export default function RootLayout({
   return (
     <html lang="id" className="scroll-smooth">
       <head>
-        {/* Favicon icon kecil di tab browser */}
-        <link rel="icon" href="/favicon.ico" sizes="any" />
+        {/* ========================================================== */}
+        {/* 2. SCRIPT GOOGLE ANALYTICS (YOUTUBE & GOOGLE ADS) */}
+        {/* ========================================================== */}
+        <Script 
+          src={`https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX`} 
+          strategy="afterInteractive" 
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-WFFDXMSEHQ', {
+              page_path: window.location.pathname,
+            });
+          `}
+        </Script>
+
+        {/* ========================================================== */}
+        {/* 3. SCRIPT META PIXEL (FACEBOOK & INSTAGRAM ADS) */}
+        {/* ========================================================== */}
+        <Script id="meta-pixel" strategy="afterInteractive">
+          {`
+            !function(f,b,e,v,n,t,s)
+            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+            n.queue=[];t=b.createElement(e);t.async=!0;
+            t.src=v;s=b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t,s)}(window, document,'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+            fbq('init', 'XXXXXXXXXXXXXXXX'); // <-- Masukkan ID Pixel Lu Nanti Di Sini
+            fbq('track', 'PageView');
+          `}
+        </Script>
       </head>
-      <body className={`${inter.className} bg-slate-50 text-slate-900 antialiased`}>
-        {children}
+
+      <body className={`${inter.className} bg-slate-50 text-slate-900 antialiased pt-[80px] flex flex-col min-h-screen`}>
+        
+        <Preloader />
+        <ConditionalNavbar />
+        <Toaster position="top-center" toastOptions={{ duration: 4000 }} />
+        
+        <main className="flex-grow">
+          {children}
+        </main>
+        
+        <Footer />
+        
       </body>
     </html>
   );

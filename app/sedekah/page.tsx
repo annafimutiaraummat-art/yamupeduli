@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ShieldCheck, Heart, ArrowRight, Loader2, Copy, CheckCircle2, HandHeart } from 'lucide-react';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 
 import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -19,6 +20,7 @@ export default function SedekahPage() {
   const [donorName, setDonorName] = useState('');
   const [donorPhone, setDonorPhone] = useState('');
   const [isAnon, setIsAnon] = useState(false);
+  const [doaMessage, setDoaMessage] = useState('');
 
   const presets = [50000, 100000, 250000, 500000];
   
@@ -52,15 +54,15 @@ export default function SedekahPage() {
 
   const handleDonateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (finalAmount < 10000) return alert('Minimal donasi adalah Rp 10.000');
-    if (!donorPhone) return alert('Nomor WhatsApp wajib diisi');
+    if (finalAmount < 10000) return toast.error('Minimal donasi adalah Rp 10.000');
+    if (!donorPhone) return toast.error('Nomor WhatsApp wajib diisi');
 
     setSubmitLoading(true);
 
     try {
       const finalName = isAnon ? 'Hamba Allah' : donorName || 'Hamba Allah';
 
-      // Masukkan ke database tanpa program_id (karena ini sedekah bebas)
+      // 1. Simpan ke Database dengan Doa Donatur (Bukan pesan mati admin lagi)
       const { error } = await supabase.from('donations').insert([{
         name: finalName,
         phone: donorPhone,
@@ -68,26 +70,32 @@ export default function SedekahPage() {
         program_title: 'Sedekah Umum / Bebas',
         program_id: null, 
         status: 'PENDING',
-        message: 'Menunggu konfirmasi via WA'
+        message: doaMessage || null // <--- Menyimpan doa ke database
       }]);
 
       if (error) throw error;
 
-      const adminPhone = "6281388898967"; // GANTI DENGAN NO WA ADMIN YAYASAN LU
+      const adminPhone = "6281388898967"; // Pastikan ini nomor WA Admin yang benar
+
+      // 2. Template WA Cerdas (Otomatis nambahin baris doa kalau diisi)
       const waText = `Halo Admin YAMU Peduli, saya ingin konfirmasi transfer donasi.
-
-*Nama:* ${finalName}
-*Tujuan:* Sedekah Umum / Operasional
-*Nominal:* Rp ${finalAmount.toLocaleString('id-ID')}
-
-Berikut saya lampirkan bukti transfernya:`;
+      *Nama:* ${finalName}
+      *Tujuan:* Sedekah Umum / Operasional
+      *Nominal:* Rp ${finalAmount.toLocaleString('id-ID')}
+      ${doaMessage ? `*Doa/Harapan:* "${doaMessage}"\n` : ''}
+      Berikut saya lampirkan bukti transfernya:`;
 
       const encodedText = encodeURIComponent(waText);
       window.open(`https://wa.me/${adminPhone}?text=${encodedText}`, '_blank');
       
-      setCustomAmount(''); setSelectedAmount(null); setDonorName(''); setDonorPhone('');
+      // 3. Reset form setelah berhasil
+      setCustomAmount(''); 
+      setSelectedAmount(null); 
+      setDonorName(''); 
+      setDonorPhone('');
+      setDoaMessage(''); // <--- Jangan lupa reset kolom doanya juga
     } catch (err: any) {
-      alert(`Terjadi kesalahan: ${err.message}`);
+      toast.error(`Terjadi kesalahan: ${err.message}`);
     } finally {
       setSubmitLoading(false);
     }
@@ -146,9 +154,19 @@ Berikut saya lampirkan bukti transfernya:`;
           </div>
 
           <div className="space-y-3 pt-2">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">2. Data Diri Donatur</span>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">2. Data Diri & Harapan</span>
             <input type="text" placeholder="Nama Lengkap" disabled={isAnon} value={isAnon ? 'Hamba Allah' : donorName} onChange={(e) => setDonorName(e.target.value)} className="w-full bg-slate-50 border rounded-xl py-3.5 px-4 text-sm font-medium focus:outline-none disabled:opacity-60 transition-all" />
             <input type="tel" required placeholder="Nomor WhatsApp Aktif (Wajib)" maxLength={13} value={donorPhone} onChange={(e) => setDonorPhone(e.target.value)} className="w-full bg-slate-50 border rounded-xl py-3.5 px-4 text-sm font-medium focus:outline-none transition-all" />
+            
+            {/* KOTAK INPUT DOA BARU */}
+            <textarea 
+              rows={2} 
+              placeholder="Tulis doa atau harapan Anda di sini (Opsional)" 
+              value={doaMessage} 
+              onChange={(e) => setDoaMessage(e.target.value)} 
+              className="w-full bg-slate-50 border rounded-xl py-3 px-4 text-sm font-medium focus:outline-none transition-all resize-none"
+            />
+
             <label className="flex items-center gap-2 cursor-pointer pt-1">
               <input type="checkbox" checked={isAnon} onChange={(e) => setIsAnon(e.target.checked)} className="rounded text-teal-600 w-4 h-4" />
               <span className="text-xs font-semibold text-slate-500">Sembunyikan nama (Tampil sebagai Hamba Allah)</span>

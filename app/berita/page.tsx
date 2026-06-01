@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, Calendar, User, ArrowRight, Loader2, Tag } from 'lucide-react';
+import { Search, Calendar, ArrowRight, Loader2, Tag, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
 
 import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -12,7 +12,15 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 export default function BeritaPage() {
   const [berita, setBerita] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // --- STATE UNTUK SEARCH & FILTER ---
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('Semua Kategori');
+  const [selectedYear, setSelectedYear] = useState('Semua Tahun');
+
+  // --- STATE UNTUK PAGINASI (HALAMAN 1,2,3) ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6; // Nampilin 6 berita per halaman biar pas grid-nya (3x2)
 
   useEffect(() => {
     async function getArticles() {
@@ -28,10 +36,31 @@ export default function BeritaPage() {
     getArticles();
   }, []);
 
+  // --- Reset ke halaman 1 setiap kali user ganti filter ---
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory, selectedYear]);
+
+  // --- MENGAMBIL OPSI KATEGORI & TAHUN OTOMATIS DARI DATABASE ---
+  const categories = ['Semua Kategori', ...Array.from(new Set(berita.map(item => item.category)))];
+  const years = ['Semua Tahun', ...Array.from(new Set(berita.map(item => new Date(item.created_at).getFullYear().toString())))].sort((a, b) => b.localeCompare(a));
+
+  // --- LOGIKA FILTERING (SEARCH + KATEGORI + TAHUN) ---
   const filteredBerita = berita.filter((item) => {
     const term = searchQuery.toLowerCase();
-    return item.title.toLowerCase().includes(term) || item.category.toLowerCase().includes(term);
+    const matchSearch = item.title.toLowerCase().includes(term) || item.snippet.toLowerCase().includes(term);
+    const matchCategory = selectedCategory === 'Semua Kategori' || item.category === selectedCategory;
+    
+    const itemYear = new Date(item.created_at).getFullYear().toString();
+    const matchYear = selectedYear === 'Semua Tahun' || itemYear === selectedYear;
+
+    return matchSearch && matchCategory && matchYear;
   });
+
+  // --- LOGIKA PEMOTONGAN DATA UNTUK PAGINASI ---
+  const totalPages = Math.ceil(filteredBerita.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const displayedBerita = filteredBerita.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased selection:bg-teal-500 selection:text-white">
@@ -42,74 +71,170 @@ export default function BeritaPage() {
         .delay-200 { animation-delay: 200ms; }
       `}} />
 
+      {/* HEADER BANNER */}
       <div className="bg-teal-950 pt-24 pb-16 px-6 text-center border-b border-teal-900">
         <div className="max-w-3xl mx-auto space-y-3">
           <span className="inline-block px-4 py-1.5 rounded-full border border-amber-400/30 bg-amber-500/20 text-amber-300 text-xs font-bold uppercase tracking-widest backdrop-blur-md animate-fade-in-up">
             Kabar YAMU Peduli
           </span>
           <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight animate-fade-in-up delay-100">
-            Berita & Artikel Terbaru
+            Jejak Langkah Kebaikan
           </h1>
           <p className="text-teal-100/80 text-sm md:text-base max-w-xl mx-auto font-normal animate-fade-in-up delay-200">
-            Ikuti perkembangan penyaluran dana amanah umat secara transparan dan akuntabel di sini.
+            Arsip publikasi, transparansi penyaluran donasi, dan cerita inspiratif dari lapangan.
           </p>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 lg:px-8 -mt-7 relative z-20 pb-24">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 -mt-7 relative z-20 pb-24">
         
-        {/* SEARCH BAR ONLY */}
-        <div className="bg-white rounded-2xl shadow-xl shadow-teal-900/5 border border-slate-200/60 p-4 mb-12 animate-fade-in-up delay-200 max-w-2xl mx-auto">
-          <div className="relative w-full">
-            <input 
-              type="text" 
-              placeholder="Cari artikel atau tag kegiatan..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-12 pr-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white transition-all text-slate-800" 
-            />
-            <Search className="w-5 h-5 text-slate-400 absolute left-4 top-3" />
+        {/* ========================================================== */}
+        {/* ADVANCED SEARCH ENGINE (FILTERING) */}
+        {/* ========================================================== */}
+        <div className="bg-white rounded-[2rem] shadow-xl shadow-teal-900/5 border border-slate-200/60 p-5 mb-12 animate-fade-in-up delay-200">
+          <div className="flex flex-col md:flex-row gap-4 items-center">
+            
+            {/* Kolom Pencarian Teks */}
+            <div className="relative w-full md:flex-1">
+              <input 
+                type="text" 
+                placeholder="Cari judul berita atau isi..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white transition-all text-slate-800" 
+              />
+              <Search className="w-5 h-5 text-slate-400 absolute left-4 top-3.5" />
+            </div>
+
+            {/* Kolom Filter Kategori */}
+            <div className="relative w-full md:w-64 shrink-0">
+              <select 
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-11 pr-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-teal-500 appearance-none text-slate-700 cursor-pointer"
+              >
+                {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+              </select>
+              <Filter className="w-4 h-4 text-slate-400 absolute left-4 top-4" />
+            </div>
+
+            {/* Kolom Filter Tahun */}
+            <div className="relative w-full md:w-48 shrink-0">
+              <select 
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-11 pr-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-teal-500 appearance-none text-slate-700 cursor-pointer"
+              >
+                {years.map(yr => <option key={yr} value={yr}>{yr}</option>)}
+              </select>
+              <Calendar className="w-4 h-4 text-slate-400 absolute left-4 top-4" />
+            </div>
+
           </div>
         </div>
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3 text-slate-400">
             <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
-            <span className="text-xs font-bold uppercase tracking-wider">Memuat Data Artikel...</span>
+            <span className="text-xs font-bold uppercase tracking-wider">Mencari Arsip Berita...</span>
           </div>
         ) : (
-          <div className="space-y-6 animate-fade-in-up">
-            {filteredBerita.length > 0 ? (
-              filteredBerita.map((item) => {
-                const formattedDate = new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-                return (
-                  <Link href={`/berita/${item.id}`} key={item.id} className="group bg-white rounded-[2rem] p-5 border border-slate-200/60 shadow-sm hover:shadow-xl hover:border-teal-200 transition-all duration-300 flex flex-col md:flex-row gap-6 items-center">
-                    <div className="w-full md:w-64 h-48 rounded-2xl overflow-hidden shrink-0 bg-slate-100">
-                      <img src={item.image_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    </div>
-                    <div className="flex flex-col justify-between h-full w-full py-1">
-                      <div>
-                        <div className="flex flex-wrap items-center gap-4 mb-3">
-                          <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md uppercase tracking-wider border border-amber-200 flex items-center gap-1">
-                            <Tag className="w-3 h-3" /> {item.category}
-                          </span>
-                          <span className="text-xs text-slate-400 font-medium flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {formattedDate}</span>
+          <div className="space-y-12 animate-fade-in-up">
+            
+            {/* ========================================================== */}
+            {/* GRID ARTIKEL (REDESIGN: VERTIKAL ALA MAJALAH) */}
+            {/* ========================================================== */}
+            {displayedBerita.length > 0 ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {displayedBerita.map((item) => {
+                  const formattedDate = new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                  return (
+                    <Link href={`/berita/${item.id}`} key={item.id} className="group bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col overflow-hidden h-full">
+                      
+                      {/* Image Header */}
+                      <div className="w-full h-56 relative overflow-hidden bg-slate-100 shrink-0">
+                        <span className="absolute top-4 left-4 z-10 bg-white/95 backdrop-blur-sm text-teal-700 text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-lg shadow-sm">
+                          {item.category}
+                        </span>
+                        <img src={item.image_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                      </div>
+                      
+                      {/* Content Body */}
+                      <div className="p-6 flex flex-col flex-grow">
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-400 mb-3">
+                          <Calendar className="w-3.5 h-3.5" />
+                          <span>{formattedDate}</span>
                         </div>
-                        <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-teal-600 transition-colors leading-snug line-clamp-2">{item.title}</h3>
-                        <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed">{item.snippet}</p>
+                        <h3 className="text-lg md:text-xl font-black text-slate-900 mb-3 group-hover:text-teal-600 transition-colors leading-snug line-clamp-2">
+                          {item.title}
+                        </h3>
+                        <p className="text-sm text-slate-500 leading-relaxed font-medium line-clamp-3 mb-6">
+                          {item.snippet}
+                        </p>
+                        
+                        {/* Footer Card */}
+                        <div className="mt-auto pt-4 border-t border-slate-100 flex items-center gap-1.5 text-xs font-bold text-teal-600 group-hover:text-teal-500 transition-colors">
+                          Baca Selengkapnya <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                        </div>
                       </div>
-                      <div className="pt-4 flex items-center gap-1.5 text-xs font-bold text-teal-600 group-hover:text-teal-500 transition-colors">
-                        Baca Selengkapnya <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })
+
+                    </Link>
+                  );
+                })}
+              </div>
             ) : (
-              <div className="py-12 text-center text-slate-400 font-bold text-sm">
-                Belum ada publikasi artikel/berita yang sesuai.
+              <div className="py-16 text-center bg-white rounded-3xl border border-dashed border-slate-300 shadow-sm">
+                <div className="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4"><Search className="w-8 h-8" /></div>
+                <h3 className="text-lg font-black text-slate-900 mb-1">Berita Tidak Ditemukan</h3>
+                <p className="text-sm text-slate-500 font-medium">Coba gunakan kata kunci atau filter lain untuk pencarian Anda.</p>
               </div>
             )}
+
+            {/* ========================================================== */}
+            {/* SISTEM PAGINASI ANGKA (1, 2, 3...) */}
+            {/* ========================================================== */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 pt-8">
+                
+                {/* Tombol Previous */}
+                <button 
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-teal-600 disabled:opacity-50 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+
+                {/* Angka Paginasi Dinamis */}
+                {[...Array(totalPages)].map((_, index) => {
+                  const pageNumber = index + 1;
+                  return (
+                    <button
+                      key={pageNumber}
+                      onClick={() => setCurrentPage(pageNumber)}
+                      className={`w-10 h-10 flex items-center justify-center rounded-xl font-bold text-sm transition-all ${
+                        currentPage === pageNumber 
+                          ? 'bg-teal-600 text-white shadow-md shadow-teal-600/20' 
+                          : 'border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-teal-600'
+                      }`}
+                    >
+                      {pageNumber}
+                    </button>
+                  );
+                })}
+
+                {/* Tombol Next */}
+                <button 
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-teal-600 disabled:opacity-50 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+                
+              </div>
+            )}
+
           </div>
         )}
       </div>
