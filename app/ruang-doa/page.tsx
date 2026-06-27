@@ -46,6 +46,7 @@ export default function RuangDoaPage() {
       const { data, error } = await supabase
         .from('donations')
         .select('id, name, message, amin_count, created_at, program_title')
+        .eq('status', 'LUNAS')
         .not('message', 'is', null)
         .neq('message', '')
         .neq('message', 'Menunggu konfirmasi via WA')
@@ -173,7 +174,7 @@ export default function RuangDoaPage() {
                       <Quote className="absolute -top-2 -right-2 w-16 h-16 text-slate-50 pointer-events-none group-hover:text-teal-50/50 transition-colors duration-300 rotate-12" />
                       
                       <div className="relative z-10 mb-6">
-                        <p className="text-slate-700 italic text-sm md:text-base leading-relaxed font-medium">
+                        <p className="text-slate-700 italic text-sm md:text-base leading-relaxed font-medium break-words whitespace-pre-wrap">
                           "{prayer.message}"
                         </p>
                       </div>

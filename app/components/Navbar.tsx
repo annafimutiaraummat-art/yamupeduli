@@ -37,11 +37,12 @@ export default function Navbar() {
         
         <Link href="/" className="flex items-center gap-2 sm:gap-3 group shrink-0">
           <div className="bg-teal-50 p-2 sm:p-2.5 rounded-xl border border-teal-100 group-hover:bg-teal-100 transition-colors">
-            <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600" />
+            <img src="/yamu.png" alt="Logo YAMU Peduli" className="w-8 h-8 sm:w-10 sm:h-10" />
           </div>
           <div className="flex flex-col">
             <span className="text-lg sm:text-xl font-black tracking-tight text-teal-950 leading-none">YAMU Peduli</span>
-            <span className="text-[10px] font-bold text-amber-500 uppercase tracking-widest mt-0.5 hidden sm:block">
+            {/* PERUBAHAN DI SINI: Menghapus 'hidden sm:block' agar teks emas selalu muncul di HP */}
+            <span className="text-[9px] sm:text-[10px] font-bold text-amber-500 uppercase tracking-widest mt-0.5 block">
               Yayasan An-Nafi Mutiara Ummat
             </span>
           </div>

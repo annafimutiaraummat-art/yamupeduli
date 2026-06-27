@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect, use } from 'react';
-import { Calendar, User, ArrowLeft, Tag, Loader2, Share2, Heart } from 'lucide-react';
+import { Calendar, User, ArrowLeft, Tag, Loader2, Share2, Heart, PlayCircle } from 'lucide-react';
 import Link from 'next/link';
-import toast from 'react-hot-toast'; // Pastikan lu udah install react-hot-toast
+import toast from 'react-hot-toast';
 
 // === INITIALIZE SUPABASE CLIENT ===
 import { createClient } from '@supabase/supabase-js';
@@ -68,6 +68,15 @@ export default function BeritaDetailPage({ params }: { params: Promise<{ id: str
     day: 'numeric', month: 'long', year: 'numeric'
   });
 
+  // --- LOGIKA SMART VIDEO EMBED ---
+  const isVideo = !!article.video_url;
+  const getYouTubeId = (url: string) => {
+    if (!url) return null;
+    const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|shorts\/)|youtu\.be\/)([^"&?\/\s]{11})/i);
+    return match ? match[1] : null;
+  };
+  const ytId = isVideo ? getYouTubeId(article.video_url) : null;
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans antialiased pb-24 selection:bg-teal-500 selection:text-white">
       
@@ -98,20 +107,37 @@ export default function BeritaDetailPage({ params }: { params: Promise<{ id: str
               <Tag className="w-3.5 h-3.5" /> {article.category}
             </span>
             <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-slate-400" /> {formattedDate}</span>
-            <span className="flex items-center gap-1.5"><User className="w-4 h-4 text-slate-400" /> Humas YAMU Peduli</span>
+            <span className="flex items-center gap-1.5"><User className="w-4 h-4 text-slate-400" /> Humas YAMU</span>
           </div>
           <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-[1.15]">
             {article.title}
           </h1>
         </div>
 
-        {/* FOTO SAMPUL */}
-        <div className="w-full h-[250px] sm:h-[350px] md:h-[450px] rounded-3xl overflow-hidden shadow-lg bg-slate-200 border border-slate-200/60 relative group">
-          <img 
-            src={article.image_url} 
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-            alt={article.title} 
-          />
+        {/* FOTO SAMPUL / MEDIA PLAYER */}
+        <div className="w-full aspect-video rounded-3xl overflow-hidden shadow-lg bg-slate-900 border border-slate-200/60 relative group">
+          {isVideo ? (
+            ytId ? (
+              <iframe 
+                src={`https://www.youtube.com/embed/${ytId}`} 
+                title={article.title}
+                className="w-full h-full absolute inset-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowFullScreen
+              />
+            ) : (
+              <video controls className="w-full h-full absolute inset-0 object-contain bg-black">
+                <source src={article.video_url} type="video/mp4" />
+                Browser Anda tidak mendukung tag video.
+              </video>
+            )
+          ) : (
+            <img 
+              src={article.image_url || '/placeholder.jpg'} 
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 absolute inset-0" 
+              alt={article.title} 
+            />
+          )}
         </div>
 
         {/* ISI ARTIKEL */}
@@ -119,7 +145,7 @@ export default function BeritaDetailPage({ params }: { params: Promise<{ id: str
           {article.snippet}
         </article>
 
-        {/* CALL TO ACTION (CTA) BAWAH */}
+        {/* CTA BAWAH */}
         <div className="mt-12 bg-teal-950 rounded-[2rem] p-8 md:p-10 text-center text-white shadow-2xl relative overflow-hidden">
           <div className="absolute inset-0 opacity-10 bg-[url('https://images.unsplash.com/photo-1593113543327-0b1a0e88ba92?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80')] bg-cover bg-center"></div>
           <div className="relative z-10 space-y-4 max-w-xl mx-auto">

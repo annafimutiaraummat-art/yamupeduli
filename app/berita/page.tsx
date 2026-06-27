@@ -147,16 +147,59 @@ export default function BeritaPage() {
             {displayedBerita.length > 0 ? (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {displayedBerita.map((item) => {
-                  const formattedDate = new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-                  return (
+                // 1. Taruh ini di dalam loop .map() sebelum return card
+                const hasVideo = !!item.video_url;
+
+                // FUNGSI REGEX SUPER (Bisa baca format watch, youtu.be, sampai Shorts!)
+                const getYouTubeId = (url: string) => {
+                  if (!url) return null;
+                  const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|shorts\/)|youtu\.be\/)([^"&?\/\s]{11})/i);
+                  return match ? match[1] : null;
+                };
+
+                const getYouTubeEmbedUrl = (url: string) => {
+                  const id = getYouTubeId(url);
+                  return id ? `https://www.youtube.com/embed/${id}` : null;
+                };
+
+                const ytId = hasVideo ? getYouTubeId(item.video_url) : null;
+                const formattedDate = new Date(item.created_at).toLocaleDateString('id-ID', {
+                  day: '2-digit',
+                  month: 'long',
+                  year: 'numeric',
+                });
+
+                // Logika Prioritas Gambar:
+                const thumbnailSrc = item.image_url 
+                  ? item.image_url 
+                  : (ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : '/placeholder.jpg');
+                return (
                     <Link href={`/berita/${item.id}`} key={item.id} className="group bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col overflow-hidden h-full">
                       
-                      {/* Image Header */}
-                      <div className="w-full h-56 relative overflow-hidden bg-slate-100 shrink-0">
-                        <span className="absolute top-4 left-4 z-10 bg-white/95 backdrop-blur-sm text-teal-700 text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-lg shadow-sm">
-                          {item.category}
-                        </span>
-                        <img src={item.image_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                      {/* FOTO SAMPUL & MEDIA PLAYER */}
+                      <div className="w-full aspect-video relative bg-slate-900">
+                        {hasVideo ? (
+                          item.video_url.includes('youtu') ? (
+                            <iframe 
+                              src={getYouTubeEmbedUrl(item.video_url)!} 
+                              title={item.title}
+                              className="w-full h-full absolute inset-0"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                              allowFullScreen
+                            />
+                          ) : (
+                            <video controls className="w-full h-full object-cover absolute inset-0">
+                              <source src={item.video_url} type="video/mp4" />
+                              Browser Anda tidak mendukung tag video.
+                            </video>
+                          )
+                        ) : (
+                          <img 
+                            src={item.image_url || '/placeholder.jpg'} 
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                            alt={item.title} 
+                          />
+                        )}
                       </div>
                       
                       {/* Content Body */}

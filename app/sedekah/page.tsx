@@ -145,7 +145,8 @@ export default function SedekahPage() {
               <span className="absolute left-4 top-3.5 font-black text-slate-400 text-sm">Rp</span>
               <input 
                 type="text" 
-                placeholder="Nominal lainnya (Min. 10.000)" 
+                placeholder="Nominal lainnya (Min. 10.000)"
+                maxLength={20}
                 value={customAmount} 
                 onChange={handleCustomInput} 
                 className="w-full bg-slate-50 border rounded-xl py-3.5 pl-11 pr-4 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all" 
@@ -155,14 +156,15 @@ export default function SedekahPage() {
 
           <div className="space-y-3 pt-2">
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">2. Data Diri & Harapan</span>
-            <input type="text" placeholder="Nama Lengkap" disabled={isAnon} value={isAnon ? 'Hamba Allah' : donorName} onChange={(e) => setDonorName(e.target.value)} className="w-full bg-slate-50 border rounded-xl py-3.5 px-4 text-sm font-medium focus:outline-none disabled:opacity-60 transition-all" />
-            <input type="tel" required placeholder="Nomor WhatsApp Aktif (Wajib)" maxLength={13} value={donorPhone} onChange={(e) => setDonorPhone(e.target.value)} className="w-full bg-slate-50 border rounded-xl py-3.5 px-4 text-sm font-medium focus:outline-none transition-all" />
+            <input maxLength={25} type="text" placeholder="Nama Lengkap" disabled={isAnon} value={isAnon ? 'Hamba Allah' : donorName} onChange={(e) => setDonorName(e.target.value)} className="w-full bg-slate-50 border rounded-xl py-3.5 px-4 text-sm font-medium focus:outline-none disabled:opacity-60 transition-all" />
+            <input maxLength={13} type="number" required placeholder="Nomor WhatsApp Aktif (Wajib)" value={donorPhone} onChange={(e) => setDonorPhone(e.target.value)} className="w-full bg-slate-50 border rounded-xl py-3.5 px-4 text-sm font-medium focus:outline-none transition-all" />
             
             {/* KOTAK INPUT DOA BARU */}
             <textarea 
-              rows={2} 
+              rows={2}
               placeholder="Tulis doa atau harapan Anda di sini (Opsional)" 
               value={doaMessage} 
+              maxLength={300}
               onChange={(e) => setDoaMessage(e.target.value)} 
               className="w-full bg-slate-50 border rounded-xl py-3 px-4 text-sm font-medium focus:outline-none transition-all resize-none"
             />

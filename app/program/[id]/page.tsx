@@ -236,15 +236,15 @@ export default function ProgramDetailPage({ params }: { params: Promise<{ id: st
                       </div>
                       <div className="relative mt-2">
                         <span className="absolute left-3 top-2.5 font-black text-slate-400 text-sm">Rp</span>
-                        <input type="text" placeholder="Nominal lainnya" value={customAmount} onChange={handleCustomInput} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-9 pr-4 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all" />
+                        <input maxLength={20} type="number" placeholder="Nominal lainnya" value={customAmount} onChange={handleCustomInput} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-9 pr-4 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all" />
                       </div>
                     </div>
 
                     {/* Identitas */}
                     <div className="space-y-2">
                       <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">2. Identitas Diri</span>
-                      <input type="text" placeholder="Nama Lengkap" disabled={isAnon} value={isAnon ? 'Hamba Allah' : donorName} onChange={(e) => setDonorName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50 transition-all" />
-                      <input type="tel" required placeholder="Nomor WhatsApp Aktif" value={donorPhone} onChange={(e) => setDonorPhone(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all" />
+                      <input maxLength={25} type="text" placeholder="Nama Lengkap" disabled={isAnon} value={isAnon ? 'Hamba Allah' : donorName} onChange={(e) => setDonorName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50 transition-all" />
+                      <input maxLength={13} type="number" required placeholder="Nomor WhatsApp Aktif" value={donorPhone} onChange={(e) => setDonorPhone(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all" />
                       <label className="flex items-center gap-2 pt-1 cursor-pointer select-none">
                         <input type="checkbox" checked={isAnon} onChange={(e) => setIsAnon(e.target.checked)} className="w-3.5 h-3.5 rounded text-teal-600 focus:ring-teal-500" />
                         <span className="text-[11px] font-semibold text-slate-500">Sembunyikan nama (Hamba Allah)</span>

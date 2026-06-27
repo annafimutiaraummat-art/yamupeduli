@@ -125,6 +125,7 @@ ${message}`;
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Nama Lengkap *</label>
                 <input 
                   type="text" 
+                  maxLength={50}
                   required 
                   value={name} 
                   onChange={(e) => setName(e.target.value)} 

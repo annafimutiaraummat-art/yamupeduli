@@ -159,11 +159,11 @@ Mohon panduan langkah awal pembukaan tabungan qurban nya admin. Terima kasih.`;
               <form onSubmit={handleTabunganSubmit} className="space-y-4 text-xs font-bold text-slate-400 uppercase tracking-wider">
                 <div className="space-y-1.5">
                   <label>Nama Lengkap Anda</label>
-                  <input type="text" required value={tabunganName} onChange={(e) => setTabunganName(e.target.value)} placeholder="Nama..." className="w-full bg-slate-50 border p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800 normal-case" />
+                  <input maxLength={25} type="text" required value={tabunganName} onChange={(e) => setTabunganName(e.target.value)} placeholder="Nama..." className="w-full bg-slate-50 border p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800 normal-case" />
                 </div>
                 <div className="space-y-1.5">
                   <label>Nomor WhatsApp Aktif</label>
-                  <input type="tel" required value={tabunganPhone} onChange={(e) => setTabunganPhone(e.target.value)} placeholder="0813..." className="w-full bg-slate-50 border p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800 normal-case" />
+                  <input maxLength={13} type="number" required value={tabunganPhone} onChange={(e) => setTabunganPhone(e.target.value)} placeholder="0813..." className="w-full bg-slate-50 border p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800 normal-case" />
                 </div>
                 <div className="space-y-1.5">
                   <label>Target Hewan Qurban</label>

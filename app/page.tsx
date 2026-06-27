@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FaInstagram, FaYoutube, FaFacebook, FaWhatsapp } from 'react-icons/fa';
-import { 
-  Phone, Heart, ArrowRight, CheckCircle2, Users, Droplets, 
-  BookOpen, MapPin, MessageCircle, ShieldCheck, FileText, 
+import {
+  Phone, Heart, ArrowRight, CheckCircle2, Users, Droplets,
+  BookOpen, MapPin, MessageCircle, ShieldCheck, FileText,
   Activity, Calendar, Calculator, Landmark, Gift, Quote, Coins
 } from 'lucide-react';
 import Image from 'next/image';
@@ -25,7 +25,7 @@ const CountUpAnimation = ({ endValue, suffix = '' }: { endValue: number, suffix?
     const animate = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
       const progress = Math.min((timestamp - startTime) / duration, 1);
-      const easeOutQuart = 1 - Math.pow(1 - progress, 4); 
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
       setCount(Math.floor(easeOutQuart * endValue));
       if (progress < 1) requestAnimationFrame(animate);
     };
@@ -33,6 +33,17 @@ const CountUpAnimation = ({ endValue, suffix = '' }: { endValue: number, suffix?
   }, [endValue]);
 
   return <span>{count.toLocaleString('id-ID')}{suffix}</span>;
+};
+
+const getYouTubeId = (url: string) => {
+  if (!url) return null;
+  const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|shorts\/)|youtu\.be\/)([^"&?\/\s]{11})/i);
+  return match ? match[1] : null;
+};
+
+const getYouTubeEmbedUrl = (url: string) => {
+  const id = getYouTubeId(url);
+  return id ? `https://www.youtube.com/embed/${id}` : null;
 };
 
 const slides = [
@@ -65,9 +76,9 @@ export default function Home() {
   // State Kalkulator Zakat
   const [gaji, setGaji] = useState('');
   const [bonus, setBonus] = useState('');
-  
+
   const totalPendapatan = (Number(gaji) || 0) + (Number(bonus) || 0);
-  const zakatNominal = totalPendapatan * 0.025; 
+  const zakatNominal = totalPendapatan * 0.025;
 
   const MIGRATION_OFFSET = { penerimaManfaat: 12000, titikAirBersih: 50, santriDibina: 300 };
 
@@ -84,20 +95,21 @@ export default function Home() {
 
     const loadRealData = async () => {
       setIsLoading(true);
-      
+
       const { data: progs } = await supabase.from('programs').select('*').order('created_at', { ascending: false }).limit(3);
       const { data: arts } = await supabase.from('articles').select('*').order('created_at', { ascending: false }).limit(3);
       const { data: qurbanSettings } = await supabase.from('qurban_settings').select('status').eq('id', 1).maybeSingle();
-      
+
       // PERBAIKAN: Masukkan kolom amin_count ke dalam select query
       const { data: prayers } = await supabase.from('donations')
         .select('id, name, message, amin_count, created_at, program_title')
+        .eq('status', 'LUNAS')
         .not('message', 'is', null)
         .neq('message', '')
         .neq('message', 'Menunggu konfirmasi via WA')
         .order('created_at', { ascending: false })
         .limit(3);
-      
+
       const { count: countDonations } = await supabase.from('donations').select('id', { count: 'exact', head: true });
       const { count: countAir } = await supabase.from('programs').select('id', { count: 'exact', head: true }).eq('category', 'Air Bersih');
       const { count: countPendidikan } = await supabase.from('programs').select('id', { count: 'exact', head: true }).eq('category', 'Pendidikan');
@@ -106,13 +118,13 @@ export default function Home() {
       if (arts) setBerita(arts);
       if (prayers) setDoaList(prayers);
       if (qurbanSettings) setQurbanStatus(qurbanSettings.status);
-      
+
       setStats({
         penerima: MIGRATION_OFFSET.penerimaManfaat + (countDonations || 0),
         airBersih: MIGRATION_OFFSET.titikAirBersih + (countAir || 0),
         santri: MIGRATION_OFFSET.santriDibina + (countPendidikan || 0)
       });
-      
+
       setIsLoading(false);
     };
 
@@ -129,7 +141,7 @@ export default function Home() {
 
     // Update di layar secara instan (Optimistic Update)
     setDoaList(prev => prev.map(p => p.id === id ? { ...p, amin_count: (p.amin_count || 0) + 1 } : p));
-    
+
     const newClicked = [...clickedAmins, id];
     setClickedAmins(newClicked);
     localStorage.setItem('yamu_clicked_amins', JSON.stringify(newClicked));
@@ -150,7 +162,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-teal-500 selection:text-white">
-      <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in-up { opacity: 0; animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .delay-100 { animation-delay: 100ms; }
@@ -223,7 +236,7 @@ export default function Home() {
               <h3 className="text-base md:text-lg font-black text-slate-900 mb-2">Infaq & Sedekah</h3>
               <p className="text-[11px] md:text-xs text-slate-500 leading-relaxed font-medium">Pahala jariyah tak terputus untuk mendukung operasional dan dakwah umat.</p>
             </Link>
-            
+
             <a href="#kalkulator-zakat" className="group bg-white p-6 md:p-8 rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl hover:border-amber-500 transition-all duration-300 flex flex-col items-center text-center relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-amber-400 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="w-16 h-16 bg-amber-50 border border-amber-100 rounded-2xl text-amber-500 mb-5 flex items-center justify-center group-hover:scale-110 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300 shadow-sm"><Calculator className="w-8 h-8" /></div>
@@ -258,7 +271,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center relative z-10">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-teal-900 text-teal-300 text-xs font-bold uppercase tracking-widest mb-4"><Calculator className="w-4 h-4" /> Zakat Profesi</div>
-              <h2 className="text-3xl md:text-4xl font-black mb-4">Sucikan Harta, <br/><span className="text-amber-400">Berkahkan Hidup</span></h2>
+              <h2 className="text-3xl md:text-4xl font-black mb-4">Sucikan Harta, <br /><span className="text-amber-400">Berkahkan Hidup</span></h2>
               <p className="text-teal-100/80 leading-relaxed mb-6">Zakat profesi adalah zakat yang dikeluarkan dari penghasilan rutin. Cukup masukkan estimasi penghasilan bulanan Anda, dan sistem kami akan menghitung kewajiban zakat (2,5%) secara akurat.</p>
             </div>
             <div className="bg-white rounded-3xl p-6 md:p-8 shadow-2xl text-slate-900">
@@ -294,23 +307,73 @@ export default function Home() {
             </div>
             <div className="space-y-6">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-teal-100 text-teal-700 text-xs font-bold uppercase tracking-widest"><Activity className="w-4 h-4" /> Tentang Kami</div>
-              <h2 className="text-3xl md:text-4xl font-black text-slate-900 leading-tight">Langkah Nyata Anda, <br/><span className="text-teal-600">Perubahan Besar Bagi Mereka</span></h2>
+              <h2 className="text-3xl md:text-4xl font-black text-slate-900 leading-tight">Langkah Nyata Anda, <br /><span className="text-teal-600">Perubahan Besar Bagi Mereka</span></h2>
               <p className="text-base text-slate-600 leading-relaxed">YAMU Peduli berdedikasi menjembatani niat baik Anda. Kami memastikan setiap sedekah yang dititipkan tersalurkan tepat sasaran untuk menciptakan dampak dan kemandirian umat yang berkelanjutan.</p>
               <div className="pt-4 grid sm:grid-cols-2 gap-4">
                 <div className="flex items-start gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-teal-300 transition-colors">
                   <div className="bg-teal-50 p-2.5 rounded-xl text-teal-600 shrink-0"><ShieldCheck className="w-6 h-6" /></div>
-                  <div><h4 className="font-bold text-slate-900 text-sm">SK Kemenkumham RI</h4><p className="text-xs font-medium text-slate-500 mt-1.5 leading-relaxed">AHU-0016362.AH.01.04<br/>AHU-AH.01.08-0043725</p></div>
+                  <div><h4 className="font-bold text-slate-900 text-sm">SK Kemenkumham RI</h4><p className="text-xs font-medium text-slate-500 mt-1.5 leading-relaxed">AHU-0016362.AH.01.04<br />AHU-AH.01.08-0043725</p></div>
                 </div>
                 <div className="flex items-start gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-teal-300 transition-colors">
                   <div className="bg-teal-50 p-2.5 rounded-xl text-teal-600 shrink-0"><FileText className="w-6 h-6" /></div>
-                  <div><h4 className="font-bold text-slate-900 text-sm">Dinsos & NPWP</h4><p className="text-xs font-medium text-slate-500 mt-1.5 leading-relaxed">Kota Tangerang Selatan<br/>NPWP: 86.715.418.9-453.000</p></div>
+                  <div><h4 className="font-bold text-slate-900 text-sm">Dinsos & NPWP</h4><p className="text-xs font-medium text-slate-500 mt-1.5 leading-relaxed">Kota Tangerang Selatan<br />NPWP: 86.715.418.9-453.000</p></div>
                 </div>
               </div>
               <div className="pt-4"><Link href="/tentang" className="inline-flex items-center font-bold text-teal-700 hover:text-teal-500 transition-colors group">Kenali Kami Lebih Dekat <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" /></Link></div>
             </div>
           </div>
         </section>
+          {/* ========================================================== */}
+        {/* BANNER CROSS-PROMO: BIMBA YAMU PEDULI (SUBDOMAIN LINK)     */}
+        {/* ========================================================== */}
+        <section className="py-16 md:py-20 bg-blue-950 relative overflow-hidden border-y border-blue-900">
+          {/* Efek Cahaya Background */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600 rounded-full blur-[100px] opacity-30 -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+          <div className="absolute bottom-0 left-0 w-72 h-72 bg-amber-500 rounded-full blur-[100px] opacity-20 translate-y-1/2 -translate-x-1/4 pointer-events-none"></div>
 
+          <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10 grid lg:grid-cols-2 gap-10 items-center">
+            <div className="space-y-6">
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/50 border border-blue-800 text-amber-400 text-xs font-bold uppercase tracking-widest backdrop-blur-md">
+                <BookOpen className="w-4 h-4" /> Unit Pendidikan Resmi Yayasan
+              </span>
+              <h2 className="text-3xl md:text-5xl font-black text-white leading-tight">
+                Bimba Bintang Junior <br />
+                <span className="text-amber-400">Cabang YAMU Peduli</span>
+              </h2>
+              <p className="text-blue-100/90 leading-relaxed text-sm md:text-base max-w-lg">
+                Alhamdulillah! Berkat sedekah Anda, YAMU Peduli kini memfasilitasi pendidikan usia dini berstandar nasional di Villa Jombang Baru. <span className="font-bold text-white">100% Gratis & Bersubsidi penuh</span> khusus anak yatim dan dhuafa.
+              </p>
+              <div className="pt-2">
+                <a 
+                  href="https://bimba.yamupeduli.id" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="inline-flex items-center gap-2 bg-amber-500 text-blue-950 px-7 py-3.5 rounded-full font-black shadow-lg shadow-amber-500/20 hover:bg-amber-400 hover:-translate-y-1 transition-all text-sm"
+                >
+                  Kunjungi Website Bimba <ArrowRight className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+            
+            {/* Visualisasi Bimba */}
+            <div className="relative h-64 md:h-[350px] w-full rounded-[2.5rem] overflow-hidden border-4 border-white/10 shadow-2xl group">
+              <img 
+                src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                alt="Bimba YAMU Jombang" 
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-blue-950 via-blue-950/40 to-transparent flex items-end p-6 md:p-8">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                    <span className="text-white font-bold text-xs uppercase tracking-wider">Telah Beroperasi</span>
+                  </div>
+                  <p className="text-white font-medium text-sm md:text-base leading-relaxed">Membangun generasi cerdas berkarakter sejak usia dini di lingkungan Jombang, Ciputat.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
         {/* PROGRAM MENDESAK TERBARU */}
         <section className="py-24 bg-white">
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
@@ -389,7 +452,11 @@ export default function Home() {
                 return (
                   <div key={prayer.id} className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200/60 relative overflow-hidden flex flex-col justify-between group hover:shadow-xl hover:border-teal-100 transition-all duration-300">
                     <Quote className="absolute -top-2 -right-2 w-16 h-16 text-slate-50 pointer-events-none group-hover:text-teal-50/40 transition-colors duration-300 rotate-12" />
-                    <div className="relative z-10"><p className="text-slate-700 italic text-sm leading-relaxed mb-6 font-medium">"{prayer.message}"</p></div>
+                    <div className="relative z-10">
+                      <p className="text-slate-700 italic text-sm leading-relaxed mb-6 font-medium break-words line-clamp-4">
+                        "{prayer.message}"
+                      </p>
+                    </div>
 
                     <div className="flex items-center justify-between border-t border-slate-100 pt-4 mt-auto relative z-10">
                       <div className="flex items-center gap-3 max-w-[60%]">
@@ -401,13 +468,12 @@ export default function Home() {
                       </div>
 
                       {/* TOMBOL AMIN SINKRON DAN INTERAKTIF */}
-                      <button 
+                      <button
                         onClick={() => handleAminSubmit(prayer.id, prayer.amin_count || 0)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 border text-xs font-black rounded-xl transition-all shadow-sm active:scale-95 ${
-                          isAlreadyAmin 
-                            ? 'bg-rose-50 border-rose-100 text-rose-500 cursor-default' 
+                        className={`flex items-center gap-1.5 px-3 py-1.5 border text-xs font-black rounded-xl transition-all shadow-sm active:scale-95 ${isAlreadyAmin
+                            ? 'bg-rose-50 border-rose-100 text-rose-500 cursor-default'
                             : 'bg-slate-50 border-slate-200 text-slate-400 hover:text-rose-500 hover:bg-rose-50 hover:border-rose-100'
-                        }`}
+                          }`}
                       >
                         <Heart className={`w-3.5 h-3.5 ${isAlreadyAmin ? 'fill-current text-rose-500' : ''}`} />
                         <span>{prayer.amin_count || 0} <span className="font-bold text-[9px] ml-0.5">{isAlreadyAmin ? 'Diamiinkan' : 'Aamiin'}</span></span>
@@ -428,9 +494,9 @@ export default function Home() {
             <div className="space-y-6">
               <span className={`inline-block px-4 py-1.5 rounded-xl text-xs font-black uppercase tracking-widest border ${qurbanStatus === 'ON' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : qurbanStatus === 'POST' ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-amber-100 text-amber-800 border-amber-200'}`}>{qurbanStatus === 'ON' ? 'Program Live Aktif' : qurbanStatus === 'POST' ? 'Dokumentasi Penyaluran' : 'Persiapan Berkelanjutan'}</span>
               <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight">
-                {qurbanStatus === 'ON' && <>Qurban Pelosok Negeri:<br/><span className="text-emerald-600">Menebar Bahagia Besarkan Syiar</span></>}
-                {qurbanStatus === 'OFF' && <>Tabungan Qurban:<br/><span className="text-amber-600">Cicil Niat Baik Mulai Hari Ini</span></>}
-                {qurbanStatus === 'POST' && <>Amanah Terlaksana:<br/><span className="text-blue-600">Laporan Penyaluran Hewan Qurban</span></>}
+                {qurbanStatus === 'ON' && <>Qurban Pelosok Negeri:<br /><span className="text-emerald-600">Menebar Bahagia Besarkan Syiar</span></>}
+                {qurbanStatus === 'OFF' && <>Tabungan Qurban:<br /><span className="text-amber-600">Cicil Niat Baik Mulai Hari Ini</span></>}
+                {qurbanStatus === 'POST' && <>Amanah Terlaksana:<br /><span className="text-blue-600">Laporan Penyaluran Hewan Qurban</span></>}
               </h2>
               <p className="text-sm md:text-base text-slate-500 font-medium leading-relaxed">
                 {qurbanStatus === 'ON' && "Yayasan An-Nafi Mutiara Ummat memfasilitasi ibadah qurban Anda untuk disalurkan secara tepat sasaran langsung kepada para santri binaan, dhuafa, dan warga pedalaman yang jarang menikmati daging qurban."}
@@ -460,19 +526,45 @@ export default function Home() {
               <Link href="/berita" className="inline-flex items-center px-6 py-3 rounded-full bg-slate-50 border border-slate-200 font-bold text-slate-700 hover:bg-slate-100 transition-colors">Lihat Semua Berita <ArrowRight className="w-4 h-4 ml-2" /></Link>
             </div>
             <div className="grid md:grid-cols-3 gap-8">
-              {berita.map((item) => (
-                <Link href={`/berita/${item.id}`} key={item.id} className="group bg-white rounded-3xl p-5 border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col gap-4">
-                  <div className="w-full h-48 rounded-2xl overflow-hidden shrink-0 bg-slate-100"><img src={item.image_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" /></div>
-                  <div className="flex flex-col flex-grow">
-                    <div className="flex items-center gap-3 mb-3">
-                      <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider bg-amber-50 border border-amber-100 px-2 py-1 rounded-md">{item.category}</span>
-                      <span className="text-xs text-slate-400 font-medium flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+              {berita.map((item) => {
+                const hasVideo = !!item.video_url;
+                const ytId = hasVideo ? getYouTubeId(item.video_url) : null;
+                const thumbnailSrc = item.image_url
+                  ? item.image_url
+                  : (ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : '/placeholder.jpg');
+
+                return (
+                  <Link href={`/berita/${item.id}`} key={item.id} className="group bg-white rounded-3xl p-5 border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col gap-4">
+                    {/* div untuk berita bergambar atau video */}
+                    <div className="relative w-full h-48 rounded-2xl overflow-hidden shrink-0 bg-slate-100">
+                      <img src={thumbnailSrc} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      {hasVideo && (
+                        <div className="absolute inset-0 bg-slate-950/20 backdrop-blur-[0.5px] transition-opacity opacity-0 group-hover:opacity-100" />
+                      )}
+                      {hasVideo && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="w-12 h-12 rounded-full bg-white/90 shadow-md text-rose-600 flex items-center justify-center transition-transform group-hover:scale-110">
+                            <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><path d="M8 5v14l11-7z" /></svg>
+                          </div>
+                        </div>
+                      )}
+                      {hasVideo && (
+                        <div className="absolute top-3 right-3 bg-rose-600 text-white text-[8px] font-black uppercase tracking-wider px-2 py-1 rounded shadow-sm">
+                          Video Dokumentasi
+                        </div>
+                      )}
                     </div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-teal-600 transition-colors line-clamp-2 leading-snug">{item.title}</h3>
-                    <p className="text-sm text-slate-500 line-clamp-2">{item.snippet}</p>
-                  </div>
-                </Link>
-              ))}
+                    <div className="flex flex-col flex-grow">
+                      <div className="flex items-center gap-3 mb-3">
+                        <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider bg-amber-50 border border-amber-100 px-2 py-1 rounded-md">{item.category || (hasVideo ? 'Video' : 'Berita')}</span>
+                        <span className="text-xs text-slate-400 font-medium flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                      </div>
+                      <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-teal-600 transition-colors line-clamp-2 leading-snug">{item.title}</h3>
+                      <p className="text-sm text-slate-500 line-clamp-2">{item.snippet}</p>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -485,11 +577,11 @@ export default function Home() {
               <div className="space-y-4">
                 <div className="flex items-start gap-4 p-5 bg-white rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
                   <div className="bg-teal-50 p-3 rounded-full text-teal-600 shrink-0"><MapPin className="w-6 h-6" /></div>
-                  <div><h4 className="font-bold text-slate-900">Alamat Pusat</h4><p className="text-sm text-slate-500 mt-1 leading-relaxed">JL. Jombang Raya, Villa Jombang Baru Blok A3 No.26 <br/>RT 001/RW 014, Kel. Jombang, Kec. Ciputat <br/>Kota Tangerang Selatan, Kode Pos 15224.</p></div>
+                  <div><h4 className="font-bold text-slate-900">Alamat Pusat</h4><p className="text-sm text-slate-500 mt-1 leading-relaxed">JL. Jombang Raya, Villa Jombang Baru Blok A3 No.26 <br />RT 001/RW 014, Kel. Jombang, Kec. Ciputat <br />Kota Tangerang Selatan, Kode Pos 15224.</p></div>
                 </div>
                 <div className="flex items-start gap-4 p-5 bg-white rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
                   <div className="bg-teal-50 p-3 rounded-full text-teal-600 shrink-0"><Phone className="w-6 h-6" /></div>
-                  <div><h4 className="font-bold text-slate-900">Layanan Donatur</h4><p className="text-sm text-slate-500 mt-1">Senin - Minggu (08:00 - 20:00)<br/>WhatsApp: +6287819972512</p></div>
+                  <div><h4 className="font-bold text-slate-900">Layanan Donatur</h4><p className="text-sm text-slate-500 mt-1">Senin - Minggu (08:00 - 20:00)<br />WhatsApp: +6287819972512</p></div>
                 </div>
               </div>
             </div>
@@ -504,7 +596,8 @@ export default function Home() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#cbd5e1_1px,transparent_1px),linear-gradient(to_bottom,#cbd5e1_1px,transparent_1px)] bg-[size:32px_32px] opacity-[0.15]"></div>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[250px] bg-teal-400/20 blur-[100px] rounded-full pointer-events-none"></div>
 
-        <style dangerouslySetInnerHTML={{__html: `
+        <style dangerouslySetInnerHTML={{
+          __html: `
           @keyframes marquee { 0% { transform: translateX(0%); } 100% { transform: translateX(-100%); } }
           .animate-marquee { animation: marquee 35s linear infinite; }
           .pause-on-hover:hover .animate-marquee { animation-play-state: paused; }
