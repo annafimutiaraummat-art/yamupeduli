@@ -14,13 +14,17 @@ export default function ProgramPage() {
   useEffect(() => {
     async function getPrograms() {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('programs')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (!error && data) setPrograms(data);
-      setLoading(false);
+      try {
+        const { data, error } = await supabase
+          .from('programs')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (!error && data) setPrograms(data);
+      } catch (err) {
+        console.warn('Gagal memuat program:', err);
+      } finally {
+        setLoading(false);
+      }
     }
     getPrograms();
   }, []);

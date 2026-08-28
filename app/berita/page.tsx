@@ -22,13 +22,17 @@ export default function BeritaPage() {
   useEffect(() => {
     async function getArticles() {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('articles')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (!error && data) setBerita(data);
-      setLoading(false);
+      try {
+        const { data, error } = await supabase
+          .from('articles')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (!error && data) setBerita(data);
+      } catch (err) {
+        console.warn('Gagal memuat berita:', err);
+      } finally {
+        setLoading(false);
+      }
     }
     getArticles();
   }, []);

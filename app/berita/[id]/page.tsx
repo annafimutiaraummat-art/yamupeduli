@@ -17,16 +17,21 @@ export default function BeritaDetailPage({ params }: { params: Promise<{ id: str
   useEffect(() => {
     async function getSingleArticle() {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('articles')
-        .select('*')
-        .eq('id', articleId)
-        .single();
-      
-      if (!error && data) {
-        setArticle(data);
+      try {
+        const { data, error } = await supabase
+          .from('articles')
+          .select('*')
+          .eq('id', articleId)
+          .single();
+        
+        if (!error && data) {
+          setArticle(data);
+        }
+      } catch (err) {
+        console.warn('Gagal memuat detail artikel:', err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
     getSingleArticle();
   }, [articleId]);
