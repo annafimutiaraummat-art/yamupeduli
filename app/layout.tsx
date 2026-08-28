@@ -21,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id" className="scroll-smooth">
+    <html lang="id" className="scroll-smooth" data-scroll-behavior="smooth">
       <head>
         {/* ========================================================== */}
         {/* 2. SCRIPT GOOGLE ANALYTICS (YOUTUBE & GOOGLE ADS) */}
@@ -60,7 +60,7 @@ export default function RootLayout({
         </Script>
       </head>
 
-      <body className={`${inter.className} bg-slate-50 text-slate-900 antialiased pt-[80px] flex flex-col min-h-screen`}>
+      <body className={`${inter.className} bg-[#f8faf9] text-slate-900 antialiased pt-16 sm:pt-20 flex flex-col min-h-screen`}>
         
         <Preloader />
         <ConditionalNavbar />

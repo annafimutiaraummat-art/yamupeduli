@@ -44,7 +44,7 @@ export default function TentangPage() {
       `}} />
 
       {/* 1. HEADER HALAMAN */}
-      <div className="bg-teal-950 pt-24 pb-16 px-6 text-center border-b border-teal-900">
+      <div className="bg-gradient-to-b from-emerald-900 via-emerald-800 to-emerald-900 pt-8 sm:pt-12 pb-16 px-6 text-center text-white relative overflow-hidden">
         <div className="max-w-3xl mx-auto space-y-3">
           <span className="inline-block px-4 py-1.5 rounded-full border border-amber-400/30 bg-amber-500/20 text-amber-300 text-xs font-bold uppercase tracking-widest backdrop-blur-md animate-fade-in-up">
             Profil Lembaga

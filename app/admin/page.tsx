@@ -250,9 +250,9 @@ export default function AdminPanel() {
           <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Halaman Masuk Admin</p>
         </div>
         <div className="space-y-4">
-          <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="Email admin" className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3.5 px-4 text-sm font-bold focus:outline-none text-white focus:border-teal-500" />
+          <input type="email" required suppressHydrationWarning autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email admin" className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3.5 px-4 text-sm font-bold focus:outline-none text-white focus:border-teal-500" />
           <div className="relative">
-            <input type={showPassword ? 'text' : 'password'} required value={password} onChange={e => setPassword(e.target.value)} placeholder="Kata sandi" className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3.5 pl-4 pr-12 text-sm font-bold focus:outline-none text-white focus:border-teal-500" />
+            <input type={showPassword ? 'text' : 'password'} required suppressHydrationWarning autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Kata sandi" className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3.5 pl-4 pr-12 text-sm font-bold focus:outline-none text-white focus:border-teal-500" />
             <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-3.5 text-slate-500 hover:text-slate-300">{showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
           </div>
         </div>

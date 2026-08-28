@@ -4,10 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, Calendar, ArrowRight, Loader2, Tag, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
 
-import { createClient } from '@supabase/supabase-js';
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+import { supabase } from '@/supabase';
 
 export default function BeritaPage() {
   const [berita, setBerita] = useState<any[]>([]);
@@ -72,7 +69,7 @@ export default function BeritaPage() {
       `}} />
 
       {/* HEADER BANNER */}
-      <div className="bg-teal-950 pt-24 pb-16 px-6 text-center border-b border-teal-900">
+      <div className="bg-gradient-to-b from-emerald-900 via-emerald-800 to-emerald-900 pt-8 sm:pt-12 pb-16 px-6 text-center text-white relative overflow-hidden">
         <div className="max-w-3xl mx-auto space-y-3">
           <span className="inline-block px-4 py-1.5 rounded-full border border-amber-400/30 bg-amber-500/20 text-amber-300 text-xs font-bold uppercase tracking-widest backdrop-blur-md animate-fade-in-up">
             Kabar YAMU Peduli

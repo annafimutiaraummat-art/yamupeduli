@@ -9,12 +9,8 @@ import {
   Activity, Calendar, Calculator, Landmark, Gift, Quote, Coins
 } from 'lucide-react';
 import Image from 'next/image';
-import { createClient } from '@supabase/supabase-js';
-import toast from 'react-hot-toast'; // Kita pakai toast resmi di sini bro
-
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+import { supabase } from '@/supabase';
+import toast from 'react-hot-toast';
 
 const CountUpAnimation = ({ endValue, suffix = '' }: { endValue: number, suffix?: string }) => {
   const [count, setCount] = useState(0);

@@ -5,12 +5,8 @@ import {
   MessageCircle, Heart, Search, Loader2, 
   ChevronLeft, ChevronRight, Quote, Smile
 } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/supabase';
 import toast from 'react-hot-toast';
-
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export default function RuangDoaPage() {
   const [prayers, setPrayers] = useState<any[]>([]);
@@ -115,7 +111,7 @@ export default function RuangDoaPage() {
       `}} />
 
       {/* HERO BANNER BANNER */}
-      <div className="bg-teal-950 pt-24 pb-16 px-6 text-center border-b border-teal-900 relative overflow-hidden">
+      <div className="bg-gradient-to-b from-emerald-900 via-emerald-800 to-emerald-900 pt-8 sm:pt-12 pb-16 px-6 text-center text-white relative overflow-hidden">
         <div className="max-w-3xl mx-auto space-y-3 relative z-10">
           <span className="inline-block px-4 py-1.5 rounded-full border border-teal-500/30 bg-teal-500/20 text-teal-300 text-xs font-bold uppercase tracking-widest backdrop-blur-md animate-fade-in-up">
             Mading Kebaikan Donatur

@@ -5,11 +5,7 @@ import { Calendar, User, ArrowLeft, Tag, Loader2, Share2, Heart, PlayCircle } fr
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 
-// === INITIALIZE SUPABASE CLIENT ===
-import { createClient } from '@supabase/supabase-js';
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+import { supabase } from '@/supabase';
 
 export default function BeritaDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = use(params);
